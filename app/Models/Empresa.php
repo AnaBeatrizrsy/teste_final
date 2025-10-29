@@ -1,13 +1,13 @@
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Model;
 
 class Empresa extends Model
 {
-    protected $table = 'empresa'; // Nome exato da tabela no banco
-    protected $primaryKey = 'id_empresa'; // Nome exato da chave primária
+    protected $table = 'empresa';
+    protected $primaryKey = 'id_empresa';
+    public $timestamps = false; // se você não usa created_at/updated_at padrões
+    protected $fillable = ['nome','logo','createdAt','updatedAt'];
 
     public function publicacoes()
     {

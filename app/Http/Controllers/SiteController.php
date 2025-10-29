@@ -1,33 +1,31 @@
 <?php
-
 namespace App\Http\Controllers;
-
-use App\Models\Publicacao;
+use Illuminate\Http\Request;
 use App\Models\Empresa;
+use App\Models\Publicacao;
 
 class SiteController extends Controller
 {
-   public function index()
-{
-    // Buscar todas as publicações com suas empresas relacionadas
-    $publicacoes = \App\Models\Publicacao::with('empresa')->get();
+    public function index()
+    {
+        // pega a primeira empresa (ajuste se tiver várias)
+        $empresa = Empresa::first();
 
-    // Buscar a empresa (ajuste o ID conforme sua tabela)
-    $empresa = \App\Models\Empresa::find(1);
+        // publicações da empresa com contagem de comentários/likes placeholders
+        $publicacoes = Publicacao::where('empresa_id', $empresa->id_empresa)
+            ->get()
+            ->map(function($p) {
+                // ajuste os nomes de campo conforme seu banco
+                $p->qtd_likes = 0;       // só visualização (funcionalidade de like será feita depois)
+                $p->qtd_dislikes = 0;
+                $p->comentarios_count = 0;
+                return $p;
+            });
 
-    // Se quiser calcular likes e deslikes gerais:
-    $empresa_likes = 0;
-    $empresa_deslikes = 0;
+        // agregados gerais (somando os placeholders)
+        $empresa_likes = 0;
+        $empresa_deslikes = 0;
 
-    if ($empresa) {
-        foreach ($publicacoes as $pub) {
-            $empresa_likes += $pub->likes ?? 0;
-            $empresa_deslikes += $pub->deslikes ?? 0;
-        }
+        return view('home', compact('empresa','publicacoes','empresa_likes','empresa_deslikes'));
     }
-
-    // Enviar todas as variáveis para a view
-    return view('home', compact('publicacoes', 'empresa', 'empresa_likes', 'empresa_deslikes'));
-}
-
 }

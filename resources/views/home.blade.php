@@ -60,15 +60,17 @@
         .publicacao h3 {
             margin: 5px 0;
         }
-        .interacoes {
+           .interacoes {
             display: flex;
-            justify-content: start;
             align-items: center;
             gap: 10px;
+            margin-top: 5px;
         }
+
         .interacoes img {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
         }
 
         /* --- COLUNA 3: LOGIN --- */
@@ -127,17 +129,36 @@
                 <img src="{{ asset('anexos/' . $pub->foto) }}" alt="{{ $pub->titulo_prato }}" width="100%">
                 <h3>{{ $pub->titulo_prato }}</h3>
                 <p>{{ $pub->local }} - {{ $pub->cidade }}</p>
-                <div>
-                     {{ $pub->likes }} |  {{ $pub->dislikes }} |  {{ $pub->comentarios }}
-                </div>
+                <div class="interacoes">
+                    <img src="{{ asset('anexos/like.svg') }}" alt="Curtir">
+                    <span>{{ $pub->likes }}</span>
+                    
+
+                    <img src="{{ asset('anexos/dislike.svg') }}" alt="Não curtir">
+                    <span>{{ $pub->dislikes }}</span>
+
+                    <img src="{{ asset('anexos/comentario.svg') }}" alt="Comentários">
+                    <span>{{ $pub->comentarios }}</span>
+            </div>
             </div>
         @endforeach
     </div>
 
     {{-- COLUNA 3: LOGIN --}}
     <div class="login">
-        <button>Entrar</button>
-    </div>
+    @guest
+        <a href="{{ route('login') }}">
+            <button>Entrar</button>
+        </a>
+       
+    @else
+        <p>Olá, {{ Auth::user()->name }}!</p>
+        <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit">Sair</button>
+        </form>
+    @endguest
+</div>
 
     {{-- RODAPÉ --}}
     <footer>
