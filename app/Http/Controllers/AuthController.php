@@ -3,38 +3,39 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use App\Models\Usuario;
 
 class AuthController extends Controller
 {
-    public function loginModal(Request $request)
+    public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
             'senha' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        // Busca usuário na tabela 'usuario'
+        $usuario = Usuario::where('email', $request->email)
+            ->where('senha', $request->senha)
+            ->first();
 
-        if (!$user || !Hash::check($request->senha, $user->senha)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Usuário ou senha incorreto',
-                'errors' => [
-                    'email' => !$user,
-                    'senha' => $user && !Hash::check($request->senha, $user->senha)
-                ]
-            ]);
+        // Se não encontrou, mostra erro
+        if (!$usuario) {
+            return back()->withErrors(['msg' => 'Usuário ou senha incorreto'])->withInput();
         }
 
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return response()->json([
-            'success' => true,
-            'redirect' => route('dashboard')
+        // Cria sessão do usuário logado
+        session([
+            'usuario_logado' => $usuario->id,
+            'usuario_logado_nome' => $usuario->nome,
         ]);
+
+        return redirect('/'); // redireciona pra home
+    }
+
+    public function logout()
+    {
+        session()->forget(['usuario_logado', 'usuario_logado_nome']);
+        return redirect('/');
     }
 }
