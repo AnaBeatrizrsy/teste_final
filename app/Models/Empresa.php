@@ -6,7 +6,7 @@ class Empresa extends Model
 {
     protected $table = 'empresa';
     protected $primaryKey = 'id_empresa';
-    public $timestamps = false; // se você não usa created_at/updated_at padrões
+    public $timestamps = false;
     protected $fillable = ['nome','logo','createdAt','updatedAt'];
 
     public function publicacoes()

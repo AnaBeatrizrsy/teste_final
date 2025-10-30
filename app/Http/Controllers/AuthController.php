@@ -14,23 +14,23 @@ class AuthController extends Controller
             'senha' => 'required',
         ]);
 
-        // Busca usuário na tabela 'usuario'
+        
         $usuario = Usuario::where('email', $request->email)
             ->where('senha', $request->senha)
             ->first();
 
-        // Se não encontrou, mostra erro
+        
         if (!$usuario) {
             return back()->withErrors(['msg' => 'Usuário ou senha incorreto'])->withInput();
         }
 
-        // Cria sessão do usuário logado
+        //sessão do usuário logado
         session([
             'usuario_logado' => $usuario->id,
             'usuario_logado_nome' => $usuario->nome,
         ]);
 
-        return redirect('/'); // redireciona pra home
+        return redirect('/'); 
     }
 
     public function logout()

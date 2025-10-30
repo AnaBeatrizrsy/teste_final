@@ -7,8 +7,8 @@
         body {
             font-family: 'Inter', sans-serif;
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr; /* perfil | main | login */
-            grid-template-rows: auto 60px; /* conteúdo + rodapé */
+            grid-template-columns: 1fr 2fr 1fr; 
+            grid-template-rows: auto 60px; 
             gap: 10px;
             margin: 0;
             background-color: #f5f5f5;
