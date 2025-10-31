@@ -80,19 +80,37 @@
             <div class="publicacao">
                 <h3>{{ $pub->titulo_prato }}</h3>
                 <img src="{{ asset('anexos/' . $pub->foto) }}" alt="{{ $pub->titulo_prato }}">
-                <p>{{ $pub->local }} - {{ $pub->cidade }}</p>
                 <div class="interacoes">
                     <img src="{{ asset('anexos/flecha_cima_vazia.svg') }}" 
-                         class="btn-like {{ $pub->liked ? 'ativo' : '' }}" 
-                         data-id="{{ $pub->id_publicacao }}">
+                        class="btn-like {{ $pub->liked ? 'ativo' : '' }}" 
+                        data-id="{{ $pub->id_publicacao }}">
                     <span id="likes-{{ $pub->id_publicacao }}">{{ $pub->likes }}</span>
 
                     <img src="{{ asset('anexos/flecha_baixo_vazia.svg') }}" 
-                         class="btn-dislike {{ $pub->disliked ? 'ativo' : '' }}" 
-                         data-id="{{ $pub->id_publicacao }}">
+                        class="btn-dislike {{ $pub->disliked ? 'ativo' : '' }}" 
+                        data-id="{{ $pub->id_publicacao }}">
                     <span id="dislikes-{{ $pub->id_publicacao }}">{{ $pub->dislikes }}</span>
+
+                    {{-- Ícone de comentário --}}
+                    <img src="{{ asset('anexos/chat.svg') }}" style="width:20px; height:20px; cursor:pointer; margin-left:10px;">
                 </div>
+
             </div>
+            <div class="comentarios" id="comentarios-{{ $pub->id_publicacao }}">
+    @foreach($pub->comentarios ?? [] as $c)
+        <div class="comentario">
+            <strong>{{ $c->usuario->nome }}:</strong> {{ $c->texto }}
+        </div>
+    @endforeach
+</div>
+
+@auth
+<div style="margin-top:5px;">
+    <input type="text" placeholder="Escreva um comentário..." class="input-comentario" data-id="{{ $pub->id_publicacao }}">
+    <button class="btn-comentar" data-id="{{ $pub->id_publicacao }}">Comentar</button>
+</div>
+@endauth
+
         @endforeach
     </div>
 
@@ -135,59 +153,103 @@
     </div>
 
     <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const modal = document.getElementById("modalLogin");
-        const abrir = document.getElementById("abrirModalLogin");
-        const cancelar = document.getElementById("btnCancelar");
-        const entrar = document.getElementById("btnEntrar");
+document.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("modalLogin");
+    const abrir = document.getElementById("abrirModalLogin");
+    const cancelar = document.getElementById("btnCancelar");
+    const entrar = document.getElementById("btnEntrar");
 
-        if (abrir) abrir.onclick = () => modal.style.display = "flex";
-        cancelar.onclick = () => modal.style.display = "none";
+    // --- MODAL LOGIN ---
+    if (abrir) abrir.onclick = () => modal.style.display = "flex";
+    cancelar.onclick = () => modal.style.display = "none";
 
-        entrar.onclick = async () => {
-            const email = document.getElementById("emailLogin").value;
-            const senha = document.getElementById("senhaLogin").value;
-            const msg = document.getElementById("msgErro");
+    entrar.onclick = async () => {
+        const email = document.getElementById("emailLogin").value;
+        const senha = document.getElementById("senhaLogin").value;
+        const msg = document.getElementById("msgErro");
 
-            const res = await fetch("{{ route('login.modal') }}", {
+        const res = await fetch("{{ route('login.modal') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ email, senha })
+        });
+
+        const data = await res.json();
+        if (!data.success) msg.style.display = "block";
+        else window.location.href = "/?login=true";
+    };
+
+    // --- LIKES / DISLIKES ---
+    document.querySelectorAll('.btn-like, .btn-dislike').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const tipo = btn.classList.contains('btn-like') ? 'like' : 'dislike';
+        const rota = tipo === 'like' ? "{{ route('like') }}" : "{{ route('dislike') }}";
+
+        const res = await fetch(rota, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ publicacao_id: id })
+        });
+
+        if (res.status === 401) return modal.style.display = "flex";
+
+        const data = await res.json();
+        document.getElementById(`likes-${id}`).textContent = data.likes;
+        document.getElementById(`dislikes-${id}`).textContent = data.dislikes;
+
+        // REMOVE classe ativo de ambos
+        const likeBtn = document.querySelector(`.btn-like[data-id='${id}']`);
+        const dislikeBtn = document.querySelector(`.btn-dislike[data-id='${id}']`);
+        likeBtn.classList.remove('ativo');
+        dislikeBtn.classList.remove('ativo');
+
+        // ADICIONA classe ativo só no botão clicado se houver like/dislike
+        if (tipo === 'like' && data.likes > 0 && likeBtn.classList.contains('btn-like')) likeBtn.classList.add('ativo');
+        if (tipo === 'dislike' && data.dislikes > 0 && dislikeBtn.classList.contains('btn-dislike')) dislikeBtn.classList.add('ativo');
+    });
+});
+
+
+    // --- COMENTÁRIOS ---
+    document.querySelectorAll('.btn-comentar').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const pubId = btn.dataset.id;
+            const input = document.querySelector(`.input-comentario[data-id='${pubId}']`);
+            const texto = input.value.trim();
+            if (!texto) return;
+
+            const res = await fetch("{{ route('comentar') }}", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
                 },
-                body: JSON.stringify({ email, senha })
+                body: JSON.stringify({ publicacao_id: pubId, texto })
             });
+
+            if (res.status === 401) return modal.style.display = "flex";
 
             const data = await res.json();
-            if (!data.success) msg.style.display = "block";
-            else window.location.href = "/?login=true";
-        };
+            const container = document.getElementById(`comentarios-${pubId}`);
 
-        document.querySelectorAll('.btn-like, .btn-dislike').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.dataset.id;
-                const tipo = btn.classList.contains('btn-like') ? 'like' : 'dislike';
-                const rota = tipo === 'like' ? "{{ route('like') }}" : "{{ route('dislike') }}";
+            // Adiciona o comentário ao DOM
+            const div = document.createElement('div');
+            div.classList.add('comentario');
+            div.innerHTML = `<strong>${data.comentario.usuario}:</strong> ${data.comentario.texto}`;
+            container.appendChild(div);
 
-                const res = await fetch(rota, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    },
-                    body: JSON.stringify({ publicacao_id: id })
-                });
-
-                if (res.status === 401) return modal.style.display = "flex";
-
-                const data = await res.json();
-                document.getElementById(`likes-${id}`).textContent = data.likes;
-                document.getElementById(`dislikes-${id}`).textContent = data.dislikes;
-
-                btn.classList.toggle("ativo");
-            });
+            input.value = ''; // limpa input
         });
     });
-    </script>
+});
+</script>
+
 </body>
 </html>

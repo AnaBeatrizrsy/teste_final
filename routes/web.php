@@ -20,8 +20,7 @@ Route::post('/like', [InteracaoController::class, 'like'])->name('like');
 Route::post('/dislike', [InteracaoController::class, 'dislike'])->name('dislike');
 Route::post('/comentar', [InteracaoController::class, 'comentar'])->name('comentar');
 
-// --- INTERAGIR (se precisar de outra ação) ---
-Route::post('/interagir', [InteracaoController::class, 'interagir'])->name('interagir');
+
 
 // --- DASHBOARD (restrito) ---
 Route::get('/dashboard', function () {

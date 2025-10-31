@@ -26,9 +26,14 @@ class InteracaoController extends Controller
                 'usuario_id' => $user->id,
                 'publicacao_id' => $request->publicacao_id,
                 'tipo' => 'like',
-                'createdAt' => now()
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
-            DB::table('likes')->where('usuario_id', $user->id)->where('publicacao_id', $request->publicacao_id)->where('tipo', 'dislike')->delete();
+            // Remove dislike se existir
+            DB::table('likes')->where('usuario_id', $user->id)
+                ->where('publicacao_id', $request->publicacao_id)
+                ->where('tipo', 'dislike')
+                ->delete();
         }
 
         return $this->getCounts($request->publicacao_id);
@@ -52,12 +57,45 @@ class InteracaoController extends Controller
                 'usuario_id' => $user->id,
                 'publicacao_id' => $request->publicacao_id,
                 'tipo' => 'dislike',
-                'createdAt' => now()
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
-            DB::table('likes')->where('usuario_id', $user->id)->where('publicacao_id', $request->publicacao_id)->where('tipo', 'like')->delete();
+            // Remove like se existir
+            DB::table('likes')->where('usuario_id', $user->id)
+                ->where('publicacao_id', $request->publicacao_id)
+                ->where('tipo', 'like')
+                ->delete();
         }
 
         return $this->getCounts($request->publicacao_id);
+    }
+
+    public function comentar(Request $request)
+    {
+        if (!Auth::check()) return response()->json(['error' => 'unauthorized'], 401);
+
+        $request->validate([
+            'publicacao_id' => 'required|exists:publicacao,id_publicacao',
+            'texto' => 'required|string|max:1000'
+        ]);
+
+        $comentarioId = DB::table('comentarios')->insertGetId([
+            'usuario_id' => Auth::id(),
+            'publicacao_id' => $request->publicacao_id,
+            'texto' => $request->texto,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        $usuario = Auth::user();
+
+        return response()->json([
+            'comentario' => [
+                'id' => $comentarioId,
+                'usuario' => $usuario->nome,
+                'texto' => $request->texto
+            ]
+        ]);
     }
 
     private function getCounts($publicacao_id)
