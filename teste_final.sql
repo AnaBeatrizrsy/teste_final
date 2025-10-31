@@ -45,20 +45,24 @@ CREATE TABLE IF NOT EXISTS `comentarios` (
   `texto` varchar(255) NOT NULL,
   `usuario_id` int NOT NULL,
   `publicacao_id` int NOT NULL,
-  `data` datetime DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime DEFAULT (now()),
+  `updated_at` datetime DEFAULT (now()),
   PRIMARY KEY (`id_comentario`),
   KEY `usuario_id` (`usuario_id`),
   KEY `publicacao_id` (`publicacao_id`),
   CONSTRAINT `comentarios_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`),
   CONSTRAINT `comentarios_ibfk_2` FOREIGN KEY (`publicacao_id`) REFERENCES `publicacao` (`id_publicacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Copiando dados para a tabela sabor_do_brasil.comentarios: ~4 rows (aproximadamente)
-INSERT INTO `comentarios` (`id_comentario`, `texto`, `usuario_id`, `publicacao_id`, `data`) VALUES
-	(1, 'Prato maravilhoso!', 1, 1, '2025-10-29 15:39:22'),
-	(2, 'Gostei bastante', 2, 1, '2025-10-29 15:39:22'),
-	(3, 'Muito temperado', 1, 2, '2025-10-29 15:39:22'),
-	(4, 'Não gostei muito', 3, 3, '2025-10-29 15:39:22');
+INSERT INTO `comentarios` (`id_comentario`, `texto`, `usuario_id`, `publicacao_id`, `created_at`, `updated_at`) VALUES
+	(1, 'Prato maravilhoso!', 1, 1, '2025-10-29 15:39:22', '2025-10-31 09:00:05'),
+	(2, 'Gostei bastante', 2, 1, '2025-10-29 15:39:22', '2025-10-31 09:00:05'),
+	(3, 'Muito temperado', 1, 2, '2025-10-29 15:39:22', '2025-10-31 09:00:05'),
+	(4, 'Não gostei muito', 3, 3, '2025-10-29 15:39:22', '2025-10-31 09:00:05'),
+	(5, 'delicia', 1, 1, '2025-10-31 12:07:39', '2025-10-31 12:07:39'),
+	(6, 'amei', 1, 1, '2025-10-31 12:08:54', '2025-10-31 12:08:54'),
+	(7, 'frio', 2, 2, '2025-10-31 12:11:04', '2025-10-31 12:11:04');
 
 -- Copiando estrutura para tabela sabor_do_brasil.empresa
 CREATE TABLE IF NOT EXISTS `empresa` (
@@ -128,21 +132,26 @@ CREATE TABLE IF NOT EXISTS `likes` (
   `publicacao_id` int NOT NULL,
   `tipo` enum('like','dislike') NOT NULL,
   `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_like`),
   KEY `usuario_id` (`usuario_id`),
   KEY `publicacao_id` (`publicacao_id`),
   CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuario` (`id`),
   CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`publicacao_id`) REFERENCES `publicacao` (`id_publicacao`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Copiando dados para a tabela sabor_do_brasil.likes: ~0 rows (aproximadamente)
-INSERT INTO `likes` (`id_like`, `usuario_id`, `publicacao_id`, `tipo`, `createdAt`) VALUES
-	(1, 1, 1, 'like', '2025-10-29 15:38:50'),
-	(2, 2, 1, 'dislike', '2025-10-29 15:38:50'),
-	(3, 3, 2, 'like', '2025-10-29 15:38:50'),
-	(4, 1, 2, 'like', '2025-10-29 15:38:50'),
-	(5, 2, 3, 'like', '2025-10-29 15:38:50'),
-	(6, 3, 3, 'dislike', '2025-10-29 15:38:50');
+-- Copiando dados para a tabela sabor_do_brasil.likes: ~7 rows (aproximadamente)
+INSERT INTO `likes` (`id_like`, `usuario_id`, `publicacao_id`, `tipo`, `createdAt`, `created_at`, `updated_at`) VALUES
+	(3, 3, 2, 'like', '2025-10-29 15:38:50', '2025-10-30 23:12:04', '2025-10-30 23:12:04'),
+	(6, 3, 3, 'dislike', '2025-10-29 15:38:50', '2025-10-30 23:12:04', '2025-10-30 23:12:04'),
+	(86, 1, 3, 'like', '2025-10-31 00:02:31', '2025-10-31 06:02:31', '2025-10-31 06:02:31'),
+	(91, 2, 3, 'dislike', '2025-10-31 00:03:21', '2025-10-31 06:03:21', '2025-10-31 06:03:21'),
+	(97, 1, 2, 'dislike', '2025-10-31 00:39:17', '2025-10-31 06:39:17', '2025-10-31 06:39:17'),
+	(98, 2, 1, 'like', '2025-10-31 00:39:44', '2025-10-31 06:39:44', '2025-10-31 06:39:44'),
+	(99, 3, 1, 'like', '2025-10-31 07:07:18', '2025-10-31 13:07:18', '2025-10-31 13:07:18'),
+	(104, 1, 1, 'dislike', '2025-10-31 09:08:46', '2025-10-31 15:08:46', '2025-10-31 15:08:46'),
+	(105, 2, 2, 'dislike', '2025-10-31 09:10:56', '2025-10-31 15:10:56', '2025-10-31 15:10:56');
 
 -- Copiando estrutura para tabela sabor_do_brasil.migrations
 CREATE TABLE IF NOT EXISTS `migrations` (
@@ -207,7 +216,8 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 
 -- Copiando dados para a tabela sabor_do_brasil.sessions: ~1 rows (aproximadamente)
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-	('xFzVPBqWU4UkCMeijkD10DBfTe8vNyHq8Tznq7QU', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiNVJIQTBFcEJmMUh4eGRhTkczamtadTBYQWdCV1dUVW0yRk4wSnNCaSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC8/bG9naW49dHJ1ZSI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo3OiJ1c3VhcmlvIjtPOjg6InN0ZENsYXNzIjo4OntzOjI6ImlkIjtpOjE7czo0OiJub21lIjtzOjk6InVzdWFyaW8wMSI7czo1OiJlbWFpbCI7czoyMToidXN1YXJpbzAxQHVzdWFyaW8uY29tIjtzOjg6Im5pY2tuYW1lIjtzOjEwOiJ1c3VhcmlvXzAxIjtzOjU6InNlbmhhIjtzOjY6IjEyMzQ1NiI7czo0OiJmb3RvIjtzOjE0OiJ1c3VhcmlvXzAxLmpwZyI7czo5OiJjcmVhdGVkQXQiO3M6MTk6IjIwMjMtMDYtMjIgMDk6MTM6NTUiO3M6OToidXBkYXRlZEF0IjtzOjE5OiIyMDIzLTA2LTIyIDA5OjE0OjU1Ijt9fQ==', 1761781428);
+	('tDgMRvRum678iT5yNXoID5IPJAwemOhMzG4GCDt6', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiU0dQY1Jkb2h3SE1oaHdUSFg0ejdxcjZ0ckZEZ3ZpOGlmNzl6WUhMTyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9fQ==', 1761912674),
+	('XEgrTAjQ5ru3wlU13kkerhyclWdoGrnnGSuSWMN2', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibWtnbmJvalFqWUZxakhUTWU1OTVqRGlLUTliMWtKV1c3R1FrQ0FBbCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1761911343);
 
 -- Copiando estrutura para tabela sabor_do_brasil.usuario
 CREATE TABLE IF NOT EXISTS `usuario` (
@@ -226,7 +236,7 @@ CREATE TABLE IF NOT EXISTS `usuario` (
 
 -- Copiando dados para a tabela sabor_do_brasil.usuario: ~3 rows (aproximadamente)
 INSERT INTO `usuario` (`id`, `nome`, `email`, `nickname`, `senha`, `foto`, `createdAt`, `updatedAt`) VALUES
-	(1, 'usuario01', 'usuario01@usuario.com', 'usuario_01', '123456', 'usuario_01.jpg', '2023-06-22 12:13:55', '2023-06-22 12:14:55'),
+	(1, 'usuario01', 'usuario01@usuario.com', 'usuario_01', '123456', 'usuario_01.jpg', '2023-06-22 12:13:55', '2025-10-30 11:51:25'),
 	(2, 'usuario02', 'usuario02@usuario.com', 'usuario_02', '654321', 'usuario_02.jpg', '2023-02-22 12:13:55', '2023-02-22 12:13:58'),
 	(3, 'usuario03', 'usuario03@usuario.com', 'usuario_03', '987654', 'usuario_03.jpg', '2023-08-22 12:13:55', '2023-08-22 12:15:55');
 

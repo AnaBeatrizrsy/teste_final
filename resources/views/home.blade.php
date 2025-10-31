@@ -106,10 +106,12 @@
                 <div class="comentarios" id="comentarios-{{ $pub->id_publicacao }}">
                     @foreach($pub->comentarios ?? [] as $c)
                         <div class="comentario">
-                            <strong>{{ $c->usuario->nome }}:</strong> {{ $c->texto }}
+                            <strong>{{ $c->nome }}:</strong> {{ $c->texto }}
                         </div>
                     @endforeach
                 </div>
+
+
 
                 @auth
                 <div class="comentario-input" id="input-comentario-{{ $pub->id_publicacao }}" style="display:none;">
@@ -231,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- ABRIR INPUT DE COMENTÁRIO ---
+    
     document.querySelectorAll('.btn-chat').forEach(btn => {
         btn.addEventListener('click', () => {
             const id = btn.dataset.id;
@@ -241,7 +243,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- ENVIAR COMENTÁRIO ---
     document.querySelectorAll('.btn-comentar').forEach(btn => {
         btn.addEventListener('click', async () => {
             const id = btn.dataset.id;

@@ -70,33 +70,35 @@ class InteracaoController extends Controller
         return $this->getCounts($request->publicacao_id);
     }
 
-    public function comentar(Request $request)
-    {
-        if (!Auth::check()) return response()->json(['error' => 'unauthorized'], 401);
+   public function comentar(Request $request)
+{
+    if (!Auth::check()) return response()->json(['error' => 'unauthorized'], 401);
 
-        $request->validate([
-            'publicacao_id' => 'required|exists:publicacao,id_publicacao',
-            'texto' => 'required|string|max:1000'
-        ]);
+    $request->validate([
+        'publicacao_id' => 'required|exists:publicacao,id_publicacao',
+        'texto' => 'required|string|max:1000'
+    ]);
 
-        $comentarioId = DB::table('comentarios')->insertGetId([
-            'usuario_id' => Auth::id(),
-            'publicacao_id' => $request->publicacao_id,
-            'texto' => $request->texto,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+    
+    $comentarioId = DB::table('comentarios')->insertGetId([
+        'usuario_id' => Auth::id(),
+        'publicacao_id' => $request->publicacao_id,
+        'texto' => $request->texto,
+        'created_at' => now(),
+        'updated_at' => now()
+    ]);
 
-        $usuario = Auth::user();
+    $usuario = Auth::user();
 
-        return response()->json([
-            'comentario' => [
-                'id' => $comentarioId,
-                'usuario' => $usuario->nome,
-                'texto' => $request->texto
-            ]
-        ]);
-    }
+    return response()->json([
+        'comentario' => [
+            'id' => $comentarioId,
+            'usuario' => $usuario->nome,
+            'texto' => $request->texto
+        ]
+    ]);
+}
+
 
     private function getCounts($publicacao_id)
     {

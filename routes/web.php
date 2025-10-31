@@ -21,6 +21,7 @@ Route::post('/comentar', [InteracaoController::class, 'comentar'])->name('coment
 
 
 
+
 // --- DASHBOARD ---
 Route::get('/dashboard', function () {
     return view('dashboard');
