@@ -1,5 +1,5 @@
 <?php
-// app/Models/Comentario.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,13 +9,25 @@ class Comentario extends Model
 {
     use HasFactory;
 
-    protected $table = 'comentario';
+    protected $table = 'comentarios';
+    protected $primaryKey = 'id_comentario';
+    public $timestamps = true; // ou false
 
     protected $fillable = [
-        'texto',
         'usuario_id',
         'publicacao_id',
+        'texto'
     ];
 
-    public $timestamps = false;
+    // Relacionamento com usuário
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'usuario_id', 'id');
+    }
+
+    // Relacionamento com publicação
+    public function publicacao()
+    {
+        return $this->belongsTo(Publicacao::class, 'publicacao_id', 'id_publicacao');
+    }
 }

@@ -1,31 +1,76 @@
 <?php
+
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
-use App\Models\Empresa;
-use App\Models\Publicacao;
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class SiteController extends Controller
 {
     public function index()
-    {
-       
-        $empresa = Empresa::first();
+{
+    $empresa = DB::table('empresa')->first();
+    $empresa_likes = DB::table('likes')->where('tipo', 'like')->count();
+    $empresa_dislikes = DB::table('likes')->where('tipo', 'dislike')->count();
+    $publicacoes = DB::table('publicacao')->get();
 
-        // publicações da empresa
-        $publicacoes = Publicacao::where('empresa_id', $empresa->id_empresa)
-            ->get()
-            ->map(function($p) {
-               
-                $p->qtd_likes = 0;      
-                $p->qtd_dislikes = 0;
-                $p->comentarios_count = 0;
-                return $p;
-            });
+    if (Auth::check()) {
+        $usuario = Auth::user();
 
-        
-        $empresa_likes = 0;
-        $empresa_deslikes = 0;
+        $usuarioLikes = DB::table('likes')
+            ->where('usuario_id', $usuario->id)
+            ->where('tipo', 'like')
+            ->count();
 
-        return view('home', compact('empresa','publicacoes','empresa_likes','empresa_deslikes'));
+        $usuarioDislikes = DB::table('likes')
+            ->where('usuario_id', $usuario->id)
+            ->where('tipo', 'dislike')
+            ->count();
+
+        foreach ($publicacoes as $pub) {
+            $pub->likes = DB::table('likes')
+                ->where('publicacao_id', $pub->id_publicacao)
+                ->where('tipo', 'like')
+                ->count();
+
+            $pub->dislikes = DB::table('likes')
+                ->where('publicacao_id', $pub->id_publicacao)
+                ->where('tipo', 'dislike')
+                ->count();
+
+            $pub->liked = DB::table('likes')
+                ->where('usuario_id', $usuario->id)
+                ->where('publicacao_id', $pub->id_publicacao)
+                ->where('tipo', 'like')
+                ->exists();
+
+            $pub->disliked = DB::table('likes')
+                ->where('usuario_id', $usuario->id)
+                ->where('publicacao_id', $pub->id_publicacao)
+                ->where('tipo', 'dislike')
+                ->exists();
+        }
+
+        return view('home', compact('empresa', 'publicacoes', 'usuarioLikes', 'usuarioDislikes'));
     }
+
+    // 👇 Correção: adicionando propriedades padrão para visitantes
+    foreach ($publicacoes as $pub) {
+        $pub->likes = DB::table('likes')
+            ->where('publicacao_id', $pub->id_publicacao)
+            ->where('tipo', 'like')
+            ->count();
+
+        $pub->dislikes = DB::table('likes')
+            ->where('publicacao_id', $pub->id_publicacao)
+            ->where('tipo', 'dislike')
+            ->count();
+
+        // 👇 Essas linhas corrigem o erro
+        $pub->liked = false;
+        $pub->disliked = false;
+    }
+
+    return view('home', compact('empresa', 'empresa_likes', 'empresa_dislikes', 'publicacoes'));
+}
 }

@@ -3,39 +3,33 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Usuario;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function loginModal(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
             'senha' => 'required',
         ]);
 
-        
-        $usuario = Usuario::where('email', $request->email)
-            ->where('senha', $request->senha)
-            ->first();
+        $user = User::where('email', $request->email)->first();
 
-        
-        if (!$usuario) {
-            return back()->withErrors(['msg' => 'Usuário ou senha incorreto'])->withInput();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Usuário ou senha incorreto']);
         }
 
-        //sessão do usuário logado
-        session([
-            'usuario_logado' => $usuario->id,
-            'usuario_logado_nome' => $usuario->nome,
-        ]);
+        // ⚠️ Se o campo da senha no seu banco for "senha" (não "password"):
+        if ($user->senha !== $request->senha) {
+            return response()->json(['success' => false, 'message' => 'Usuário ou senha incorreto']);
+        }
 
-        return redirect('/'); 
-    }
+        Auth::login($user);
+        $request->session()->regenerate();
 
-    public function logout()
-    {
-        session()->forget(['usuario_logado', 'usuario_logado_nome']);
-        return redirect('/');
+        return response()->json(['success' => true]);
     }
 }
