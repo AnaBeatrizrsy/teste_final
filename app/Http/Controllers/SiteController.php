@@ -54,7 +54,7 @@ class SiteController extends Controller
         return view('home', compact('empresa', 'publicacoes', 'usuarioLikes', 'usuarioDislikes'));
     }
 
-    // 👇 Correção: adicionando propriedades padrão para visitantes
+    
     foreach ($publicacoes as $pub) {
         $pub->likes = DB::table('likes')
             ->where('publicacao_id', $pub->id_publicacao)
@@ -66,7 +66,7 @@ class SiteController extends Controller
             ->where('tipo', 'dislike')
             ->count();
 
-        // 👇 Essas linhas corrigem o erro
+       
         $pub->liked = false;
         $pub->disliked = false;
     }

@@ -6,33 +6,31 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InteracaoController;
 
-// --- PÁGINA PRINCIPAL ---
+// --- MEU ---
+
 Route::get('/', [SiteController::class, 'index'])->name('home');
 
-// --- LOGIN MODAL ---
 Route::post('/login-modal', [AuthController::class, 'loginModal'])->name('login.modal');
 
-// --- LOGOUT ---
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// --- INTERAÇÕES (likes, dislikes e comentários) ---
+
 Route::post('/like', [InteracaoController::class, 'like'])->name('like');
 Route::post('/dislike', [InteracaoController::class, 'dislike'])->name('dislike');
 Route::post('/comentar', [InteracaoController::class, 'comentar'])->name('comentar');
 
 
 
-// --- DASHBOARD (restrito) ---
+// --- DASHBOARD ---
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// --- PROFILE (restrito) ---
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// --- AUTENTICAÇÃO PADRÃO ---
+
 require __DIR__.'/auth.php';

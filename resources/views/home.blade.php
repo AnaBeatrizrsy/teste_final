@@ -48,6 +48,8 @@
             border: 1px solid #ccc; border-radius: 4px;
         }
         .erro { border: 2px solid red !important; }
+        .comentario-input { display: flex; gap:5px; margin-top:5px; }
+        .comentario-input input { flex:1; padding:5px; }
     </style>
 </head>
 <body>
@@ -80,6 +82,8 @@
             <div class="publicacao">
                 <h3>{{ $pub->titulo_prato }}</h3>
                 <img src="{{ asset('anexos/' . $pub->foto) }}" alt="{{ $pub->titulo_prato }}">
+                <p>{{ $pub->local }} - {{ $pub->cidade }}</p>
+
                 <div class="interacoes">
                     <img src="{{ asset('anexos/flecha_cima_vazia.svg') }}" 
                         class="btn-like {{ $pub->liked ? 'ativo' : '' }}" 
@@ -91,26 +95,29 @@
                         data-id="{{ $pub->id_publicacao }}">
                     <span id="dislikes-{{ $pub->id_publicacao }}">{{ $pub->dislikes }}</span>
 
-                    {{-- Ícone de comentário --}}
-                    <img src="{{ asset('anexos/chat.svg') }}" style="width:20px; height:20px; cursor:pointer; margin-left:10px;">
+                    @auth
+                    <img src="{{ asset('anexos/chat.svg') }}" 
+                        class="btn-chat" 
+                        data-id="{{ $pub->id_publicacao }}" 
+                        style="cursor:pointer; width:20px; height:20px;">
+                    @endauth
                 </div>
 
+                <div class="comentarios" id="comentarios-{{ $pub->id_publicacao }}">
+                    @foreach($pub->comentarios ?? [] as $c)
+                        <div class="comentario">
+                            <strong>{{ $c->usuario->nome }}:</strong> {{ $c->texto }}
+                        </div>
+                    @endforeach
+                </div>
+
+                @auth
+                <div class="comentario-input" id="input-comentario-{{ $pub->id_publicacao }}" style="display:none;">
+                    <input type="text" placeholder="Escreva um comentário..." class="input-comentario" data-id="{{ $pub->id_publicacao }}">
+                    <button class="btn-comentar" data-id="{{ $pub->id_publicacao }}">Comentar</button>
+                </div>
+                @endauth
             </div>
-            <div class="comentarios" id="comentarios-{{ $pub->id_publicacao }}">
-    @foreach($pub->comentarios ?? [] as $c)
-        <div class="comentario">
-            <strong>{{ $c->usuario->nome }}:</strong> {{ $c->texto }}
-        </div>
-    @endforeach
-</div>
-
-@auth
-<div style="margin-top:5px;">
-    <input type="text" placeholder="Escreva um comentário..." class="input-comentario" data-id="{{ $pub->id_publicacao }}">
-    <button class="btn-comentar" data-id="{{ $pub->id_publicacao }}">Comentar</button>
-</div>
-@endauth
-
         @endforeach
     </div>
 
@@ -152,6 +159,7 @@
         </div>
     </div>
 
+    {{-- SCRIPT --}}
     <script>
 document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("modalLogin");
@@ -168,86 +176,114 @@ document.addEventListener("DOMContentLoaded", () => {
         const senha = document.getElementById("senhaLogin").value;
         const msg = document.getElementById("msgErro");
 
-        const res = await fetch("{{ route('login.modal') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({ email, senha })
-        });
-
-        const data = await res.json();
-        if (!data.success) msg.style.display = "block";
-        else window.location.href = "/?login=true";
-    };
-
-    // --- LIKES / DISLIKES ---
-    document.querySelectorAll('.btn-like, .btn-dislike').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        const id = btn.dataset.id;
-        const tipo = btn.classList.contains('btn-like') ? 'like' : 'dislike';
-        const rota = tipo === 'like' ? "{{ route('like') }}" : "{{ route('dislike') }}";
-
-        const res = await fetch(rota, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({ publicacao_id: id })
-        });
-
-        if (res.status === 401) return modal.style.display = "flex";
-
-        const data = await res.json();
-        document.getElementById(`likes-${id}`).textContent = data.likes;
-        document.getElementById(`dislikes-${id}`).textContent = data.dislikes;
-
-        // REMOVE classe ativo de ambos
-        const likeBtn = document.querySelector(`.btn-like[data-id='${id}']`);
-        const dislikeBtn = document.querySelector(`.btn-dislike[data-id='${id}']`);
-        likeBtn.classList.remove('ativo');
-        dislikeBtn.classList.remove('ativo');
-
-        // ADICIONA classe ativo só no botão clicado se houver like/dislike
-        if (tipo === 'like' && data.likes > 0 && likeBtn.classList.contains('btn-like')) likeBtn.classList.add('ativo');
-        if (tipo === 'dislike' && data.dislikes > 0 && dislikeBtn.classList.contains('btn-dislike')) dislikeBtn.classList.add('ativo');
-    });
-});
-
-
-    // --- COMENTÁRIOS ---
-    document.querySelectorAll('.btn-comentar').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const pubId = btn.dataset.id;
-            const input = document.querySelector(`.input-comentario[data-id='${pubId}']`);
-            const texto = input.value.trim();
-            if (!texto) return;
-
-            const res = await fetch("{{ route('comentar') }}", {
+        try {
+            const res = await fetch("{{ route('login.modal') }}", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
                 },
-                body: JSON.stringify({ publicacao_id: pubId, texto })
+                body: JSON.stringify({ email, senha })
             });
-
-            if (res.status === 401) return modal.style.display = "flex";
-
             const data = await res.json();
-            const container = document.getElementById(`comentarios-${pubId}`);
+            if (!data.success) msg.style.display = "block";
+            else window.location.href = "/?login=true";
+        } catch(err) {
+            console.error("Erro no login:", err);
+        }
+    };
 
-            // Adiciona o comentário ao DOM
-            const div = document.createElement('div');
-            div.classList.add('comentario');
-            div.innerHTML = `<strong>${data.comentario.usuario}:</strong> ${data.comentario.texto}`;
-            container.appendChild(div);
+    // --- LIKES / DISLIKES ---
+    document.querySelectorAll('.btn-like, .btn-dislike').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const tipo = btn.classList.contains('btn-like') ? 'like' : 'dislike';
+            const rota = tipo === 'like' ? "{{ route('like') }}" : "{{ route('dislike') }}";
 
-            input.value = ''; // limpa input
+            try {
+                const res = await fetch(rota, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({ publicacao_id: id })
+                });
+                if (res.status === 401) return modal.style.display = "flex";
+
+                const data = await res.json();
+                document.getElementById(`likes-${id}`).textContent = data.likes;
+                document.getElementById(`dislikes-${id}`).textContent = data.dislikes;
+
+                const likeBtn = document.querySelector(`.btn-like[data-id='${id}']`);
+                const dislikeBtn = document.querySelector(`.btn-dislike[data-id='${id}']`);
+
+                if (tipo === 'like') {
+                    likeBtn.classList.add('ativo');
+                    dislikeBtn.classList.remove('ativo');
+                } else {
+                    dislikeBtn.classList.add('ativo');
+                    likeBtn.classList.remove('ativo');
+                }
+            } catch(err) {
+                console.error("Erro no like/dislike:", err);
+            }
         });
     });
+
+    // --- ABRIR INPUT DE COMENTÁRIO ---
+    document.querySelectorAll('.btn-chat').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const inputDiv = document.getElementById(`input-comentario-${id}`);
+            inputDiv.style.display = inputDiv.style.display === 'none' ? 'flex' : 'none';
+            if(inputDiv.style.display === 'flex') inputDiv.querySelector('input').focus();
+        });
+    });
+
+    // --- ENVIAR COMENTÁRIO ---
+    document.querySelectorAll('.btn-comentar').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const input = document.querySelector(`.input-comentario[data-id='${id}']`);
+            const texto = input.value.trim();
+            if (!texto) return;
+
+            try {
+                const res = await fetch("{{ route('comentar') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({ publicacao_id: id, texto })
+                });
+
+                if (res.status === 401) return modal.style.display = "flex";
+
+                const data = await res.json();
+                const comentariosDiv = document.getElementById(`comentarios-${id}`);
+                const div = document.createElement('div');
+                div.classList.add('comentario');
+                div.style.opacity = 0;
+                div.innerHTML = `<strong>${data.comentario.usuario}:</strong> ${data.comentario.texto}`;
+                comentariosDiv.appendChild(div);
+
+                
+                let op = 0;
+                const timer = setInterval(() => {
+                    if(op >= 1) clearInterval(timer);
+                    div.style.opacity = op;
+                    op += 0.1;
+                }, 30);
+
+                input.value = '';
+            } catch(err) {
+                console.error("Erro ao comentar:", err);
+            }
+        });
+    });
+
 });
 </script>
 

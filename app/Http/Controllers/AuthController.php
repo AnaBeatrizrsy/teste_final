@@ -22,7 +22,6 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Usuário ou senha incorreto']);
         }
 
-        // ⚠️ Se o campo da senha no seu banco for "senha" (não "password"):
         if ($user->senha !== $request->senha) {
             return response()->json(['success' => false, 'message' => 'Usuário ou senha incorreto']);
         }

@@ -29,7 +29,7 @@ class InteracaoController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
-            // Remove dislike se existir
+            
             DB::table('likes')->where('usuario_id', $user->id)
                 ->where('publicacao_id', $request->publicacao_id)
                 ->where('tipo', 'dislike')
@@ -60,7 +60,7 @@ class InteracaoController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
-            // Remove like se existir
+            
             DB::table('likes')->where('usuario_id', $user->id)
                 ->where('publicacao_id', $request->publicacao_id)
                 ->where('tipo', 'like')

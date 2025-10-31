@@ -11,7 +11,7 @@ class Comentario extends Model
 
     protected $table = 'comentarios';
     protected $primaryKey = 'id_comentario';
-    public $timestamps = true; // ou false
+    public $timestamps = true;
 
     protected $fillable = [
         'usuario_id',
@@ -19,13 +19,13 @@ class Comentario extends Model
         'texto'
     ];
 
-    // Relacionamento com usuário
+   
     public function usuario()
     {
         return $this->belongsTo(User::class, 'usuario_id', 'id');
     }
 
-    // Relacionamento com publicação
+    
     public function publicacao()
     {
         return $this->belongsTo(Publicacao::class, 'publicacao_id', 'id_publicacao');
